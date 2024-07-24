@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>AI Transcribing and Translating App</title>
+</head>
+
+<body>
+    <h1>AI Transcribing and Translating App</h1>
+    <form id="uploadForm">
+        <label for="idioma_entrada">Idioma de Entrada:</label>
+        <select id="idioma_entrada" name="idioma_entrada" required></select><br><br>
+        <label for="idioma_destino">Idioma de Destino:</label>
+        <select id="idioma_destino" name="idioma_destino" required></select><br><br>
+        <input type="file" id="fileInput" name="file" accept="video/mp4" required><br><br>
+        <input type="submit" value="Upload">
+    </form>
+    <div id="result"></div>
+    <script src="../static/upload.js"></script>
+</body>
+
+</html>
