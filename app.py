@@ -29,18 +29,18 @@ def upload_file():
     file = request.files['file']
     if file.filename == '':
         return jsonify({'error': 'No selected file'}), 400
-    idioma_entrada = request.form['idioma_entrada']
-    idioma_destino = request.form['idioma_destino']
-    if not idioma_entrada or not idioma_destino:
+    idioma_selecionado = request.form['idioma_destino']
+    model = request.form['model']
+    if not idioma_selecionado:
         return jsonify({'error': 'Missing language inputs'}), 400
     if file:
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
         file.save(file_path)
         try:
-            model = whisper.load_model("medium")
-            result = model.transcribe(file_path, language=idioma_entrada,)
+            model = whisper.load_model(model)
+            result = model.transcribe(file_path)
+            idioma_detectado = result['language'] 
             srt_path = os.path.join(app.config['UPLOAD_FOLDER'], 'transcription.srt')
-            
             with open(srt_path, 'w', encoding='utf-8') as srt_file:
                 for i, segment in enumerate(result['segments']):
                     start = segment['start']
