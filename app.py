@@ -6,32 +6,17 @@ import os
 import re
 import subprocess
 
-# Carregar variáveis de ambiente do arquivo .env
-load_dotenv()
+from file_processing import ler_e_processar_arquivo_srt, reescrever_arquivo_srt
+from translate import traduzir_texto
+from utils import format_time
 
-# Obter a chave da API a partir das variáveis de ambiente
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
-client = OpenAI(api_key=OPENAI_API_KEY)
 app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
-
-def traduzir_texto(texto, idioma_entrada, idioma_destino):
-    mensagem = f"Translate this text from {idioma_entrada} to {idioma_destino} maintaining cohesion and continuity between the sentences as if translating a continuous dialogue: {texto}"
-    response = client.chat.completions.create(model="gpt-3.5-turbo",
-        messages=[
-            {"role": "system", "content": "You are a translator."},
-            {"role": "user", "content": mensagem},
-        ],
-        n=1,
-        stop=None,
-        temperature=0.3)
-    traducao = response.choices[0].message.content.strip()
-    return traducao
 
 @app.route('/')
 def upload_form():
@@ -89,36 +74,6 @@ def upload_file():
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
-def extract_srt_data(file_path):
-    with open(file_path, 'r', encoding='utf-8') as file:
-        srt_content = file.read()
-    blocks = re.findall(r'(\d+\s*\n\d{2}:\d{2}:\d{2},\d{3} --> \d{2}:\d{2}:\d{2},\d{3}\s*\n.*?(?=\n\d|\Z))', srt_content, re.DOTALL)
-    timestamps = []
-    texts = []
-    for block in blocks:
-        timestamp = re.search(r'\d{2}:\d{2}:\d{2},\d{3} --> \d{2}:\d{2}:\d{2},\d{3}', block).group()
-        text = re.sub(r'\d+\s*\n\d{2}:\d{2}:\d{2},\d{3} --> \d{2}:\d{2}:\d{2},\d{3}\s*\n', '', block).strip()
-        timestamps.append(timestamp)
-        texts.append(text)
-    return timestamps, texts
-
-def combine_timestamps_and_texts(timestamps, translated_texts):
-    srt_blocks = []
-    for i in range(len(timestamps)):
-        if i < len(translated_texts):
-            srt_blocks.append(f"{i+1}\n{timestamps[i]}\n{translated_texts[i]}\n")
-        else:
-            srt_blocks.append(f"{i+1}\n{timestamps[i]}\n")
-    return "\n".join(srt_blocks)
-
-def format_time(seconds):
-    millis = int((seconds - int(seconds)) * 1000)
-    seconds = int(seconds)
-    minutes = seconds // 60
-    seconds = seconds % 60
-    hours = minutes // 60
-    minutes = minutes % 60
-    return f"{hours:02}:{minutes:02}:{seconds:02},{millis:03}"
 
 if __name__ == '__main__':
     app.run(debug=True)
