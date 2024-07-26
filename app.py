@@ -77,9 +77,9 @@ def upload_file():
 
             caminho_saida_video = os.path.join(app.config['UPLOAD_FOLDER'], 'video_traduzido.mp4')
             comando_ffmpeg = [
-                'ffmpeg', '-i', file_path, '-vf', f"subtitles={caminho_saida_srt}", caminho_saida_video
+                'ffmpeg', '-i', file_path, '-vf', f"subtitles={caminho_saida_srt.replace(os.sep, '/')}", caminho_saida_video
             ]
-            subprocess.run(comando_ffmpeg, check=True)
+            subprocess.run(comando_ffmpeg, check=True, shell=True)
 
             return jsonify({'success': 'File uploaded and translated successfully', 'output_file': 'video_traduzido.mp4'})
         except Exception as e:
