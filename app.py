@@ -64,7 +64,11 @@ def upload_file():
             comando_ffmpeg = [
                 'ffmpeg', '-i', file_path, '-vf', f"subtitles={caminho_arquivo_traduzido.replace(os.sep, '/')}", caminho_saida_video
             ]
-            subprocess.run(comando_ffmpeg, check=True, shell=True)
+            try:
+                result = subprocess.run(comando_ffmpeg, check=True, capture_output=True, text=True)
+                print("Saída do comando FFmpeg:", result.stdout)
+            except subprocess.CalledProcessError as e:
+                print("Erro ao executar o comando FFmpeg:", e.stderr)
 
             return jsonify({'success': 'File uploaded and translated successfully', 'output_file': 'video_traduzido.mp4'})
         except Exception as e:

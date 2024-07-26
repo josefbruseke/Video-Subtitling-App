@@ -1,7 +1,7 @@
 document.getElementById('uploadForm').addEventListener('submit', function (event) {
     event.preventDefault();
 
-    document.getElementById('result').innerText = 'The video is being processing! ;)';
+    document.getElementById('result').innerText = 'The video is being processed! Please wait ;)';
 
     let fileInput = document.getElementById('fileInput');
     let file = fileInput.files[0];
@@ -44,7 +44,7 @@ const languages = [
     "Turkish", "Ukrainian", "Urdu", "Vietnamese", "Welsh"
 ];
 
-const models = ["tiny","base", "small", "medium","large"];
+const models = ["tiny", "base", "small", "medium", "large"];
 const defaultModel = "medium";
 
 
