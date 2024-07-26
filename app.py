@@ -48,21 +48,21 @@ def upload_file():
                     text = segment['text']
                     srt_file.write(f"{i+1}\n{format_time(start)} --> {format_time(end)}\n{text}\n\n")
 
-            timestamps, texts = extract_srt_data(srt_path)
-            if not texts:
-                return jsonify({'error': 'No text extracted from the transcription.'}), 500
-
-            texto_para_traduzir = "\n\n".join(texts)
-            traducao = traduzir_texto(texto_para_traduzir, idioma_entrada, idioma_destino)
-            translated_texts = traducao.split('\n\n')
-            novo_srt_conteudo = combine_timestamps_and_texts(timestamps, translated_texts)
-            caminho_saida_srt = os.path.join(app.config['UPLOAD_FOLDER'], 'traducao.srt')
-            with open(caminho_saida_srt, 'w', encoding='utf-8') as arquivo_saida:
-                arquivo_saida.write(novo_srt_conteudo)
-
+            legendas = ler_e_processar_arquivo_srt(srt_path)
+            # Traduzir o texto das legendas
+            print(legendas)
+            for legenda in legendas:
+                print()
+                print(legenda)
+                legenda['texto'] = traduzir_texto(legenda['texto'], idioma_entrada=idioma_detectado,   idioma_destino=idioma_selecionado)
+            # Reescrever o arquivo SRT com as legendas traduzidas
+            print(legendas)
+            caminho_arquivo_traduzido = 'uploads/exemplo_traduzido.srt'
+            reescrever_arquivo_srt(caminho_arquivo_traduzido, legendas)
+            print(f"Arquivo traduzido salvo como {caminho_arquivo_traduzido}")
             caminho_saida_video = os.path.join(app.config['UPLOAD_FOLDER'], 'video_traduzido.mp4')
             comando_ffmpeg = [
-                'ffmpeg', '-i', file_path, '-vf', f"subtitles={caminho_saida_srt.replace(os.sep, '/')}", caminho_saida_video
+                'ffmpeg', '-i', file_path, '-vf', f"subtitles={caminho_arquivo_traduzido.replace(os.sep, '/')}", caminho_saida_video
             ]
             subprocess.run(comando_ffmpeg, check=True, shell=True)
 
