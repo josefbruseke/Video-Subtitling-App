@@ -1,34 +1,38 @@
+import ast
 
-# Função para ler e processar o arquivo SRT
+
 def ler_e_processar_arquivo_srt(caminho_arquivo):
     print('ler e processar iniciado')
     print(caminho_arquivo)
     with open(caminho_arquivo, 'r', encoding='utf-8') as arquivo:
         conteudo = arquivo.read()
-    
-    legendas = []
+
+    tempos = {}
+    textos = {}
     blocos = conteudo.strip().split('\n\n')
     
     for bloco in blocos:
         linhas = bloco.split('\n')
-        numero_legenda = int(linhas[0])
+        numero_id = int(linhas[0])
         tempo = linhas[1]
         texto = " ".join(linhas[2:])
-        legendas.append({
-            "numero": numero_legenda,
-            "tempo": tempo,
-            "texto": texto
-        })
+        tempos[numero_id] = tempo
+        textos[numero_id] = texto
     print('ler e processar finalizado')
 
-    return legendas
+    return tempos, textos
 
+def reescrever_arquivo_srt(caminho_arquivo, tempos, textos_traduzidos):
+    # Converter a string textos_traduzidos em um dicionário
+    try:
+        textos = ast.literal_eval(textos_traduzidos)
+    except (SyntaxError, ValueError) as e:
+        print(f"Erro ao converter textos_traduzidos em um dicionário: {e}")
+        return
 
-# Função para reescrever o arquivo SRT com as legendas traduzidas
-def reescrever_arquivo_srt(caminho_arquivo, legendas):
-    print('reescrever inciado')
     with open(caminho_arquivo, 'w', encoding='utf-8') as arquivo:
-        for legenda in legendas:
-            arquivo.write(f"{legenda['numero']}\n")
-            arquivo.write(f"{legenda['tempo']}\n")
-            arquivo.write(f"{legenda['texto']}\n\n")
+        # Obter todos os IDs das legendas e ordená-los
+        ids_legendas = sorted(tempos.keys())
+        for numero_id in ids_legendas:
+            # Escrever no arquivo o número da legenda, o tempo e o texto traduzido
+            arquivo.write(f"{numero_id}\n{tempos[numero_id]}\n{textos[numero_id]}\n\n")
