@@ -1,4 +1,4 @@
-import os
+import os   
 from openai import OpenAI
 from dotenv import load_dotenv
 
@@ -9,9 +9,8 @@ def create_openai_client():
     return OpenAI(api_key=OPENAI_API_KEY)
 
 def traduzir_texto(texto, idioma_entrada, idioma_destino):
-    print('traduzir tester')
     client = create_openai_client()
-    mensagem = f"Translate this text from {idioma_entrada} to {idioma_destino} maintaining cohesion and continuity between the sentences as if translating a continuous dialogue: {texto}"
+    mensagem = f"Translate this text from {idioma_entrada} to {idioma_destino} without changing its format: {texto}"
     response = client.chat.completions.create(model="gpt-4o-mini",
         messages=[
             {"role": "system", "content": "You are a translator."},
