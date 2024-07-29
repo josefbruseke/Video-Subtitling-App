@@ -1,15 +1,11 @@
 from flask import Flask, request, render_template, jsonify, send_from_directory
-from openai import OpenAI
-from dotenv import load_dotenv
 import whisper
 import os
-import re
 import subprocess
 
 from file_processing import ler_e_processar_arquivo_srt, reescrever_arquivo_srt
 from translate import traduzir_texto
-from utils import format_time
-
+from utils import format_time, get_available_filename
 
 app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads'
@@ -30,16 +26,16 @@ def upload_file():
     if file.filename == '':
         return jsonify({'error': 'No selected file'}), 400
     idioma_selecionado = request.form['idioma_destino']
-    model = request.form['model']
+    model_name = request.form['model']  # Alterado para 'model_name' para evitar conflito de nome
     if not idioma_selecionado:
         return jsonify({'error': 'Missing language inputs'}), 400
     if file:
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
         file.save(file_path)
         try:
-            model = whisper.load_model(model)
+            model = whisper.load_model(model_name)
             result = model.transcribe(file_path)
-            idioma_detectado = result['language'] 
+            idioma_detectado = result['language']
             srt_path = os.path.join(app.config['UPLOAD_FOLDER'], 'transcription.srt')
             with open(srt_path, 'w', encoding='utf-8') as srt_file:
                 for i, segment in enumerate(result['segments']):
