@@ -48,19 +48,14 @@ def upload_file():
                     text = segment['text']
                     srt_file.write(f"{i+1}\n{format_time(start)} --> {format_time(end)}\n{text}\n\n")
 
-            legendas = ler_e_processar_arquivo_srt(srt_path)
-            # Traduzir o texto das legendas
-            print(legendas)
-            for legenda in legendas:
-                print()
-                print(legenda)
-                legenda['texto'] = traduzir_texto(legenda['texto'], idioma_entrada=idioma_detectado,   idioma_destino=idioma_selecionado)
-            # Reescrever o arquivo SRT com as legendas traduzidas
-            print(legendas)
-            caminho_arquivo_traduzido = 'uploads/exemplo_traduzido.srt'
-            reescrever_arquivo_srt(caminho_arquivo_traduzido, legendas)
+            tempos, textos = ler_e_processar_arquivo_srt(srt_path)
+            texto_traduzido = traduzir_texto(idioma_destino=idioma_selecionado, idioma_entrada=idioma_detectado, texto=textos)
+            caminho_arquivo_traduzido = os.path.join(app.config['UPLOAD_FOLDER'], 'exemplo_traduzido.srt')
+            reescrever_arquivo_srt(caminho_arquivo_traduzido, tempos, texto_traduzido)
             print(f"Arquivo traduzido salvo como {caminho_arquivo_traduzido}")
-            caminho_saida_video = os.path.join(app.config['UPLOAD_FOLDER'], 'video_traduzido.mp4')
+            output_filename = 'video_traduzido.mp4'
+            caminho_saida_video = os.path.join(app.config['UPLOAD_FOLDER'], get_available_filename(app.config['UPLOAD_FOLDER'], output_filename))
+            print(caminho_saida_video)
             comando_ffmpeg = [
                 'ffmpeg', '-i', file_path, '-vf', f"subtitles={caminho_arquivo_traduzido.replace(os.sep, '/')}", caminho_saida_video
             ]
@@ -70,7 +65,7 @@ def upload_file():
             except subprocess.CalledProcessError as e:
                 print("Erro ao executar o comando FFmpeg:", e.stderr)
 
-            return jsonify({'success': 'File uploaded and translated successfully', 'output_file': 'video_traduzido.mp4'})
+            return jsonify({'success': 'File uploaded and translated successfully', 'output_file': os.path.basename(caminho_saida_video)})
         except Exception as e:
             return jsonify({'error': str(e)}), 500
 
