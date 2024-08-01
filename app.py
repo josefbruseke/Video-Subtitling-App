@@ -4,7 +4,7 @@ import os
 import subprocess
 
 from file_processing import dividir_dicionario_em_chunks, ler_e_processar_arquivo_srt, reescrever_arquivo_srt, translate_chunks
-from translate import traduzir_texto
+from faster_whisper import WhisperModel
 from utils import format_time, get_available_filename
 
 app = Flask(__name__)
@@ -13,6 +13,29 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
+
+def segments_to_dict(segments):
+    srt_dict = {}
+    for i, segment in enumerate(segments):
+        start = segment.start
+        end = segment.end
+        text = segment.text
+        srt_dict[i+1] = {
+            "start": format_time(start),
+            "end": format_time(end),
+            "text": text
+        }
+    return srt_dict
+
+def save_transcription(segments):
+    srt_path = os.path.join(app.config['UPLOAD_FOLDER'], 'transcription.srt')
+    with open(srt_path, 'w', encoding='utf-8') as srt_file:
+        for i, segment in enumerate(segments):
+            start = segment.start
+            end = segment.end
+            text = segment.text
+            srt_file.write(f"{i+1}\n{format_time(start)} --> {format_time(end)}\n{text}\n\n")
+
 
 @app.route('/')
 def upload_form():
@@ -33,14 +56,15 @@ def upload_file():
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
         file.save(file_path)
         try:
-            model = whisper.load_model(model_name)
+            model = WhisperModel(model_name, device="cpu", compute_type="int8")
             result = model.transcribe(file_path)
+            segments, _ = model.transcribe(file_path, )
             srt_path = os.path.join(app.config['UPLOAD_FOLDER'], 'transcription.srt')
             with open(srt_path, 'w', encoding='utf-8') as srt_file:
-                for i, segment in enumerate(result['segments']):
-                    start = segment['start']
-                    end = segment['end']
-                    text = segment['text']
+                for i, segment in enumerate(segments):
+                    start = segment.start
+                    end = segment.end
+                    text = segment.text
                     srt_file.write(f"{i+1}\n{format_time(start)} --> {format_time(end)}\n{text}\n\n")
 
             tempos, textos = ler_e_processar_arquivo_srt(srt_path)
