@@ -3,7 +3,7 @@ import whisper
 import os
 import subprocess
 
-from file_processing import ler_e_processar_arquivo_srt, reescrever_arquivo_srt
+from file_processing import dividir_dicionario_em_chunks, ler_e_processar_arquivo_srt, reescrever_arquivo_srt, translate_chunks
 from translate import traduzir_texto
 from utils import format_time, get_available_filename
 
@@ -35,7 +35,6 @@ def upload_file():
         try:
             model = whisper.load_model(model_name)
             result = model.transcribe(file_path)
-            idioma_detectado = result['language']
             srt_path = os.path.join(app.config['UPLOAD_FOLDER'], 'transcription.srt')
             with open(srt_path, 'w', encoding='utf-8') as srt_file:
                 for i, segment in enumerate(result['segments']):
@@ -45,10 +44,11 @@ def upload_file():
                     srt_file.write(f"{i+1}\n{format_time(start)} --> {format_time(end)}\n{text}\n\n")
 
             tempos, textos = ler_e_processar_arquivo_srt(srt_path)
-            texto_traduzido = traduzir_texto(idioma_destino=idioma_selecionado, idioma_entrada=idioma_detectado, texto=textos)
+            tamanho_chunk = 20  
+            textos_chunks = dividir_dicionario_em_chunks(textos, tamanho_chunk)
+            texto_traduzido = translate_chunks(textos_chunks, target_language=idioma_selecionado)
             caminho_arquivo_traduzido = os.path.join(app.config['UPLOAD_FOLDER'], 'exemplo_traduzido.srt')
             reescrever_arquivo_srt(caminho_arquivo_traduzido, tempos, texto_traduzido)
-            print(f"Arquivo traduzido salvo como {caminho_arquivo_traduzido}")
             output_filename = 'video_traduzido.mp4'
             caminho_saida_video = os.path.join(app.config['UPLOAD_FOLDER'], get_available_filename(app.config['UPLOAD_FOLDER'], output_filename))
             print(caminho_saida_video)
