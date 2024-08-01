@@ -1,23 +1,23 @@
 <!doctype html>
 <html lang="en">
-
 <head>
     <meta charset="utf-8">
-    <title>AI Transcribing and Translating App</title>
+    <title>Video Transcribing and Translating App</title>
+    <link href="/static/styles.css" rel="stylesheet">
 </head>
-
-<body>
-    <h1>AI Transcribing and Translating App</h1>
+<body >
+    <h1>Video Transcribing and Translating App</h1>
     <form id="uploadForm">
-        <label for="idioma_destino">Idioma de Destino:</label>
-        <select id="idioma_destino" name="idioma_destino" required></select><br><br>
-        <label for="model">Model:</label>
-        <select id="model" name="model" required></select><br><br>
-        <input type="file" id="fileInput" name="file" accept="video/mp4" required><br><br>
+        <label for="idioma_destino">Target Language</label>
+        <select id="idioma_destino" name="idioma_destino" required>
+        </select>
+        <label for="model">Model</label>
+        <select id="model" name="model" required>
+        </select>
+        <input type="file" id="fileInput" name="file" accept="video/mp4" required>
         <input type="submit" value="Upload">
     </form>
     <div id="result"></div>
-    <script src="../static/upload.js"></script>
+    <script src="/static/upload.js"></script>
 </body>
-
 </html>
