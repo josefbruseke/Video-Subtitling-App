@@ -8,15 +8,16 @@ def create_openai_client():
     OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
     return OpenAI(api_key=OPENAI_API_KEY)
 
-def define_prompt(idioma_destino, texto):
+def define_prompt(idioma_origem, idioma_destino, texto):
+    print(idioma_origem)
     prompt = f"The dictionary below contains the index of a timestamp and the corresponding text. Return a dictionary with the translation of the text to {idioma_destino} with its associated index: {texto}"
     return prompt
 
 
-def traduzir_texto(texto, idioma_destino):
+def translate_text(texto, idioma_origem, idioma_destino):
     print('Tradução iniciada')
     client = create_openai_client()
-    message = define_prompt(idioma_destino, texto)
+    message = define_prompt(idioma_origem, idioma_destino, texto)
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
