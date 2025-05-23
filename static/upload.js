@@ -5,10 +5,12 @@ document.getElementById('uploadForm').addEventListener('submit', function (event
 
     let fileInput = document.getElementById('fileInput');
     let file = fileInput.files[0];
-
+    
+    let idiomaDestino = document.getElementById('idioma_destino').value;
+    let idiomaSigla = languages[idiomaDestino];
     let formData = new FormData();
     formData.append('file', file);
-    formData.append('idioma_destino', document.getElementById('idioma_destino').value);
+    formData.append('idioma_destino', idiomaSigla);  
     formData.append('model', document.getElementById('model').value);
 
     fetch('/upload', {
@@ -34,30 +36,50 @@ document.getElementById('uploadForm').addEventListener('submit', function (event
         });
 });
 
-const languages = [
-    "Afrikaans", "Albanian", "Arabic", "Armenian", "Assamese", "Azerbaijani", "Balochi", "Bengali",
-    "Burmese", "Cantonese (Yue)", "Cebuano", "Danish", "Dutch", "English", "Estonian", "Filipino",
-    "Flemish", "Galician", "German", "Greek", "Hindi", "Hispanic", "Hungarian",
-    "Indonesian", "Irish", "Italian", "Japanese", "Kazakh", "Korean", "Lithuanian", "Macedonian",
-    "Mandarin (CN)", "Marathi", "Nepali", "Nynorsk", "Pashto", "Polish", "Portuguese", "Romanian",
-    "Russian", "Serbian", "Sindhi", "Slovak", "Slovenian", "Spanish", "Swahili", "Tamil", "Thai",
-    "Turkish", "Ukrainian", "Urdu", "Vietnamese", "Welsh"
-];
+const languages = {
+    "Arabic": "ar",
+    "Cantonese (Yue)": "yue",
+    "Danish": "da",
+    "Dutch": "nl",
+    "English": "en",
+    "Estonian": "et",
+    "Filipino": "fil",
+    "German": "de",
+    "Greek": "el",
+    "Hindi": "hi",
+    "Hispanic": "es",
+    "Hungarian": "hi",
+    "Indonesian": "id",
+    "Italian": "it",
+    "Japanese": "ja",
+    "Korean": "ko",
+    "Mandarin (CN)": "zh",
+    "Pashto": "ps",
+    "Polish": "pl",
+    "Portuguese": "pt",
+    "Romanian": "ro",
+    "Russian": "ru",
+    "Spanish": "es",
+    "Thai": "yh",
+    "Turkish": "tr",
+    "Ukrainian": "uk",
+};
 
 const models = ["tiny", "base", "small", "medium", "large"];
 const defaultModel = "medium";
 
-
 const idiomaDestinoSelect = document.getElementById('idioma_destino');
 const modelSelect = document.getElementById('model');
 
-languages.forEach(language => {
+// Popula o select de idioma com os nomes completos
+Object.keys(languages).forEach(language => {
     let optionDestino = document.createElement('option');
     optionDestino.value = language;
     optionDestino.textContent = language;
     idiomaDestinoSelect.appendChild(optionDestino);
 });
 
+// Popula o select de modelo
 models.forEach(model => {
     let optionModel = document.createElement('option');
     optionModel.value = model;
@@ -67,4 +89,3 @@ models.forEach(model => {
     }
     modelSelect.appendChild(optionModel);
 });
-
