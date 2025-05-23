@@ -5,7 +5,7 @@ import time  # Add time module for measuring execution time
 
 
 from file_processing import dividir_dicionario_em_chunks, ler_e_processar_arquivo_srt, reescrever_arquivo_srt, translate_chunks
-from faster_whisper import WhisperModel
+from transcribe import create_transcription, write_srt
 from utils import format_time, get_available_filename
 
 
@@ -65,31 +65,14 @@ def upload_file():
         save_time = time.time() - start_save
         
         try:
-            print("Transcrição iniciada")
-            # Time for model loading
-            start_model_load = time.time()
-            model = WhisperModel(model_name, device="cpu", compute_type="int8")
-            model_load_time = time.time() - start_model_load
-            print(f"Modelo carregado em {model_load_time:.2f} segundos")
-            
-            # Time for transcription
-            start_transcription = time.time()
-            result = model.transcribe(file_path)
-            segments, info = model.transcribe(file_path)
-            transcription_time = time.time() - start_transcription
-            
-            detected_language = info.language
-            print(f"Detected language '{info.language}' with probability {info.language_probability} in {transcription_time:.2f} seconds")
-            
-            # Time for SRT file writing
-            start_srt_write = time.time()
             srt_path = os.path.join(app.config['UPLOAD_FOLDER'], 'transcription.srt')
-            with open(srt_path, 'w', encoding='utf-8') as srt_file:
-                for i, segment in enumerate(segments):
-                    start = segment.start
-                    end = segment.end
-                    text = segment.text
-                    srt_file.write(f"{i+1}\n{format_time(start)} --> {format_time(end)}\n{text}\n\n")
+
+            start_transcription = time.time()
+            segments, detected_language = create_transcription(file_path, model_name)
+            transcription_time = time.time() - start_transcription
+
+            start_srt_write = time.time()
+            write_srt(segments, srt_path)
             srt_write_time = time.time() - start_srt_write
 
             # Time for SRT processing
@@ -136,7 +119,6 @@ def upload_file():
             # Print summary of timing
             print(f"\nPerformance Summary:")
             print(f"File save: {save_time:.2f} seconds")
-            print(f"Model loading: {model_load_time:.2f} seconds")
             print(f"Transcription: {transcription_time:.2f} seconds")
             print(f"SRT writing: {srt_write_time:.2f} seconds")
             print(f"SRT processing: {srt_process_time:.2f} seconds")
@@ -151,7 +133,6 @@ def upload_file():
                 'output_file': os.path.basename(caminho_saida_video),
                 'timing': {
                     'file_save': round(save_time, 2),
-                    'model_load': round(model_load_time, 2),
                     'transcription': round(transcription_time, 2),
                     'srt_writing': round(srt_write_time, 2),
                     'srt_processing': round(srt_process_time, 2),
