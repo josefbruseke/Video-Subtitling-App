@@ -1,9 +1,5 @@
-import ast
-import json
-import re
 
-
-from translate import traduzir_texto  # Supondo que você tenha uma função traduzir_texto disponível
+from translate import translate_text
 
 def ler_e_processar_arquivo_srt(caminho_arquivo):
     print('ler e processar iniciado')
@@ -87,11 +83,14 @@ def dict_filter(text):
     dictionary_text = eval(dictionary_text)
     return dictionary_text
 
-def translate_chunks(textos_chunks, target_language):
+def translate_chunks(textos_chunks, target_language, origin_language):
+    print('Tradução de chunks iniciada')
     textos_traduzidos = {}
-
+    print(f'trlaste chunks lingua: {origin_language}')
     for chunk in textos_chunks:
-        chunk_traduzido_dict = dict_filter(traduzir_texto(idioma_destino=target_language, texto=chunk))
+        print(chunk)
+        # chunk_traduzido_dict = dict_filter(translate_text(text=chunk, target_language=target_language, origin_language=origin_language)) GOOGLE
+        chunk_traduzido_dict = dict_filter(translate_text(texto=chunk, idioma_origem=origin_language, idioma_destino=target_language))
         print(type(chunk_traduzido_dict))
         print(f'Chunk traduzido: {chunk_traduzido_dict}')
         textos_traduzidos.update(chunk_traduzido_dict)
